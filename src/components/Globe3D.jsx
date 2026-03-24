@@ -26,9 +26,9 @@ export default function Globe3D({ satellites, selectedSatellite, onSatelliteClic
 
     const controls = globe.controls();
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.3;
+    controls.autoRotateSpeed = 0.5;
     controls.enableDamping = true;
-    controls.dampingFactor = 0.1;
+    controls.dampingFactor = 0.05;
     controls.minDistance = 120;
     controls.maxDistance = 600;
 
@@ -134,8 +134,8 @@ export default function Globe3D({ satellites, selectedSatellite, onSatelliteClic
         bumpImageUrl={EARTH_WATER}
         backgroundImageUrl={NIGHT_SKY}
         showAtmosphere={true}
-        atmosphereColor="#3a228a"
-        atmosphereAltitude={0.15}
+        atmosphereColor="#00E5FF" // Bright electric cyan tone
+        atmosphereAltitude={0.25}
         animateIn={true}
         
         // HTML Widgets instead of Points
@@ -148,12 +148,24 @@ export default function Globe3D({ satellites, selectedSatellite, onSatelliteClic
         // Custom globe material for Day/Night specular
         onGlobeReady={() => {
           const globeMaterial = globeEl.current.globeMaterial();
-          globeMaterial.bumpScale = 10;
+          globeMaterial.bumpScale = 15;
           new THREE.TextureLoader().load(EARTH_WATER, texture => {
             globeMaterial.specularMap = texture;
-            globeMaterial.specular = new THREE.Color('grey');
-            globeMaterial.shininess = 15;
+            globeMaterial.specular = new THREE.Color('#333333');
+            globeMaterial.shininess = 25;
           });
+
+          // Tweak internal lights for a more cinematic look
+          const scene = globeEl.current.scene();
+          const dLight = scene.children.find(obj => obj.type === 'DirectionalLight');
+          if (dLight) {
+            dLight.intensity = 2.0; 
+            dLight.position.set(1, 0.5, 1).normalize();
+          }
+          const aLight = scene.children.find(obj => obj.type === 'AmbientLight');
+          if (aLight) {
+            aLight.intensity = 0.15; // Darker night side
+          }
         }}
 
         // Maps / Labels configuration (Tile layer for borders/cities)
