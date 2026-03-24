@@ -1,0 +1,515 @@
+:root {
+    --c-bg: #030507;
+    --c-panel: rgba(5, 8, 12, 0.85);
+    --c-panel-border: rgba(255, 255, 255, 0.08);
+    
+    --c-primary: #00f0ff; /* Cyan */
+    --c-secondary: #0088ff; /* Deep Blue */
+    --c-accent: #ff2a6d; /* Red/Pink for alerts */
+    --c-success: #05ffa1; /* Green */
+    
+    --f-ui: 'Rajdhani', sans-serif;
+    --f-mono: 'Share Tech Mono', monospace;
+    
+    --ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none; /* Prevent text selection for app-like feel */
+}
+
+body {
+    background-color: var(--c-bg);
+    color: var(--c-primary);
+    font-family: var(--f-ui);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* --- BOOT SEQUENCE --- */
+#boot-sequence {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #020202;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s var(--ease-out);
+}
+
+#boot-sequence.loaded {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader-content {
+    text-align: center;
+    width: 300px;
+}
+
+.loader-content .logo {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.loader-content .highlight {
+    color: var(--c-primary);
+}
+
+.loader-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.loader-bar .progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--c-primary);
+    box-shadow: 0 0 10px var(--c-primary);
+    animation: loadProgress 2s ease-in-out forwards;
+}
+
+.terminal-text {
+    font-family: var(--f-mono);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 10px;
+}
+
+@keyframes loadProgress {
+    0% { width: 0%; }
+    40% { width: 30%; }
+    70% { width: 80%; }
+    100% { width: 100%; }
+}
+
+/* --- MAP --- */
+#iss-map {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    filter: saturate(0) contrast(1.2) brightness(0.8); /* Stark B&W base for map */
+}
+
+/* --- UI LAYER --- */
+#interface {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    padding: 20px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 20px;
+}
+
+.hud-panel {
+    background: var(--c-panel);
+    border: 1px solid var(--c-panel-border);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+    position: relative;
+}
+
+/* Decorative corner markers for panels */
+.hud-panel::before, .hud-panel::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--c-primary);
+    transition: all 0.3s ease;
+}
+.hud-panel::before { top: -1px; left: -1px; }
+.hud-panel::after { bottom: -1px; right: -1px; }
+
+/* Top Bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    clip-path: polygon(
+        10px 0, 100% 0, 
+        100% calc(100% - 10px), calc(100% - 10px) 100%, 
+        0 100%, 0 10px
+    );
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    color: #fff;
+}
+
+.brand svg {
+    stroke: var(--c-primary);
+    filter: drop-shadow(0 0 5px var(--c-primary));
+}
+
+.brand .dim {
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+}
+
+.separator {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 20px;
+}
+
+.mission-timer {
+    font-family: var(--f-mono);
+    color: var(--c-secondary);
+    font-size: 0.9rem;
+}
+
+.left-section, .right-section {
+    display: flex;
+    align-items: center;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    font-family: var(--f-mono);
+}
+
+.status-indicator {
+    width: 6px;
+    height: 6px;
+    background: #333;
+    border-radius: 50%;
+}
+
+.status-indicator.active {
+    background: var(--c-success);
+    box-shadow: 0 0 8px var(--c-success);
+    animation: blink 2s infinite;
+}
+
+.connection-status .value {
+    color: var(--c-success);
+}
+
+/* Sidebar (Telemetry) */
+.sidebar {
+    width: 300px;
+    padding: 20px;
+    align-self: start;
+    clip-path: polygon(
+        0 0, 100% 0, 
+        100% calc(100% - 20px), calc(100% - 20px) 100%, 
+        0 100%
+    );
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.panel-header h3 {
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.dec-line {
+    flex-grow: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--c-primary), transparent);
+}
+
+.data-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.data-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.data-item label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+}
+
+.value-container {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.data-item .value {
+    font-family: var(--f-mono);
+    font-size: 1.4rem;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.data-item .value.highlight {
+    color: var(--c-primary);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.data-item .unit {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.bar-graph {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-top: 6px;
+    width: 100%;
+    position: relative;
+}
+
+.bar-graph .fill {
+    height: 100%;
+    background: var(--c-primary);
+    box-shadow: 0 0 5px var(--c-primary);
+    transition: width 1s linear;
+}
+
+.panel-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.2);
+    text-align: right;
+}
+
+/* Bottom Controls */
+.bottom-controls {
+    justify-self: end; /* Align to bottom right */
+    align-self: end;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 15px 30px;
+    clip-path: polygon(
+        15px 0, 100% 0, 
+        100% 100%, 0 100%, 
+        0 15px
+    );
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-block .label {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.info-block .value {
+    font-weight: 700;
+    color: #fff;
+}
+
+.tactical-btn {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--c-primary);
+    color: var(--c-primary);
+    padding: 10px 24px;
+    font-family: var(--f-ui);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+.tactical-btn:hover {
+    background: var(--c-primary);
+    color: #000;
+    box-shadow: 0 0 15px var(--c-primary);
+}
+
+.tactical-btn svg {
+    stroke: currentColor;
+}
+
+/* --- OVERLAYS --- */
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 40%, #000 100%);
+    pointer-events: none;
+    z-index: 6;
+    opacity: 0.8;
+}
+
+.noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 7;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* --- ANIMATIONS --- */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* --- CUSTOM LEAFLET STYLES --- */
+.iss-marker-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.iss-core {
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #fff;
+    z-index: 2;
+}
+
+.iss-radar-sweep {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--c-primary);
+    border-radius: 50%;
+    opacity: 0;
+    animation: radarPing 2s infinite;
+}
+
+.iss-axis {
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 240, 255, 0.3);
+}
+
+.iss-axis.vertical {
+    transform: rotate(90deg);
+}
+
+@keyframes radarPing {
+    0% { transform: scale(0.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* Popup Customization */
+.leaflet-popup-content-wrapper {
+    background: var(--c-panel) !important;
+    border: 1px solid var(--c-primary) !important;
+    color: #fff !important;
+    font-family: var(--f-ui) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-popup-tip {
+    background: var(--c-panel) !important;
+    border-left: 1px solid var(--c-primary) !important;
+    border-top: 1px solid var(--c-primary) !important;
+}
+
+.leaflet-popup-content b {
+    color: var(--c-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #interface {
+        grid-template-rows: auto 1fr auto;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-width: none;
+        align-self: end;
+        grid-row: 3;
+        margin-bottom: 60px; /* Space for bottom controls */
+        background: rgba(5, 8, 12, 0.95);
+    }
+    
+    .data-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .data-item.large {
+        grid-column: span 2;
+    }
+    
+    .bottom-controls {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: calc(100% - 20px);
+        justify-content: space-between;
+    }
+    
+    .top-bar .mission-timer {
+        display: none;
+    }
+}

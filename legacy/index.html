@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ORBITAL // Real-Time ISS Tracking System</title>
+    <meta name="description" content="Advanced real-time visualization of the International Space Station.">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Loading Curtain -->
+    <div id="boot-sequence">
+        <div class="loader-content">
+            <div class="logo">ORBITAL<span class="highlight">SYS</span></div>
+            <div class="loader-bar">
+                <div class="progress"></div>
+            </div>
+            <div class="terminal-text">INITIALIZING SATELLITE UPLINK...</div>
+        </div>
+    </div>
+
+    <!-- UI Overlay Layer -->
+    <div id="interface">
+        
+        <!-- Top Navigation / Status -->
+        <header class="hud-panel top-bar">
+            <div class="left-section">
+                <div class="brand">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <line x1="12" y1="2" x2="12" y2="4"></line>
+                        <line x1="12" y1="20" x2="12" y2="22"></line>
+                        <line x1="2" y1="12" x2="4" y2="12"></line>
+                        <line x1="20" y1="12" x2="22" y2="12"></line>
+                    </svg>
+                    <span>ORBITAL</span><span class="dim">TRACKER</span>
+                </div>
+                <div class="separator"></div>
+                <div class="mission-timer">T+ <span id="uptime">00:00:00</span></div>
+            </div>
+            
+            <div class="right-section">
+                <div class="connection-status">
+                    <span class="label">UPLINK</span>
+                    <span class="status-indicator active"></span>
+                    <span class="value">SECURE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Telemetry Sidebar -->
+        <aside class="hud-panel sidebar">
+            <div class="panel-header">
+                <h3>TELEMETRY</h3>
+                <div class="dec-line"></div>
+            </div>
+
+            <div class="data-grid">
+                <div class="data-item">
+                    <label>LATITUDE</label>
+                    <div class="value-container">
+                        <span class="value" id="lat">00.0000</span>
+                        <span class="unit">deg</span>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <label>LONGITUDE</label>
+                    <div class="value-container">
+                        <span class="value" id="lon">00.0000</span>
+                        <span class="unit">deg</span>
+                    </div>
+                </div>
+                <div class="data-item large">
+                    <label>ALTITUDE</label>
+                    <div class="value-container">
+                        <span class="value highlight" id="alt">000.00</span>
+                        <span class="unit">km</span>
+                    </div>
+                    <div class="bar-graph">
+                        <div class="fill" id="alt-bar" style="width: 50%"></div>
+                    </div>
+                </div>
+                <div class="data-item large">
+                    <label>VELOCITY</label>
+                    <div class="value-container">
+                        <span class="value highlight" id="vel">00000.00</span>
+                        <span class="unit">km/h</span>
+                    </div>
+                     <div class="bar-graph">
+                        <div class="fill" id="vel-bar" style="width: 80%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <div class="coords-system">WGS84 REFERENCE</div>
+            </div>
+        </aside>
+
+        <!-- Bottom Controls -->
+        <div class="hud-panel bottom-controls">
+            <div class="info-block">
+                <span class="label">TARGET</span>
+                <span class="value">ISS (ZARYA)</span>
+            </div>
+            <div class="actions">
+                <button id="recenter-btn" class="tactical-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    LOCK VIEW
+                </button>
+            </div>
+        </div>
+
+        <!-- Atmospheric Effects -->
+        <div class="grid-overlay"></div>
+        <div class="vignette"></div>
+        <div class="noise"></div>
+    </div>
+
+    <div id="iss-map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="script.js"></script>
+</body>
+</html>
