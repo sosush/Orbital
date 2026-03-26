@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { fetchSatellites, SATELLITE_GROUPS } from '../services/satelliteService';
 import { createSatRec, getPosition, getOrbitPath } from '../services/propagator';
+import { estimateSatelliteSizeMeters } from '../services/satelliteSizeCatalog';
 
 export function useSatellites() {
   const [rawSatellites, setRawSatellites] = useState([]);
@@ -36,10 +37,11 @@ export function useSatellites() {
               noradId,
               category: sat.category,
               categoryLabel: sat.categoryLabel,
-              inclination: parseFloat(sat.tle2.substring(8, 16)),
-              eccentricity: parseFloat('0.' + sat.tle2.substring(26, 33)),
-              meanMotion: parseFloat(sat.tle2.substring(52, 63)),
-              period: (24 * 60) / parseFloat(sat.tle2.substring(52, 63)),
+              sizeM: estimateSatelliteSizeMeters(sat.name, sat.category),
+              inclination: parseFloat(sat.tle2.substring(8, 16)) || 0,
+              eccentricity: parseFloat('0.' + sat.tle2.substring(26, 33)) || 0,
+              meanMotion: parseFloat(sat.tle2.substring(52, 63)) || 14,
+              period: (24 * 60) / (parseFloat(sat.tle2.substring(52, 63)) || 14),
               ...pos,
             });
           } catch { /* skip bad TLEs */ }
@@ -48,8 +50,9 @@ export function useSatellites() {
         setRawSatellites(processed);
         setPositions(processed);
         setLoading(false);
+        console.log('[useSatellites] Loaded', processed.length, 'satellites');
       } catch (err) {
-        if (!cancelled) { setError(err.message); setLoading(false); }
+        if (!cancelled) { setError(err.message); setLoading(false); console.error('[useSatellites] Error:', err); }
       }
     })();
     return () => { cancelled = true; };

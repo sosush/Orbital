@@ -10,6 +10,7 @@ export default function FeatureToggles({ features, onToggle, debrisLoading, laun
     { key: 'islLinks', label: 'SAT LINKS', icon: '⚡', description: 'Inter-sat links' },
     { key: 'launches', label: 'LAUNCHES', icon: '🚀', description: 'Live launches', loading: launchLoading },
     { key: 'heatmap', label: 'HEATMAP', icon: '🌡', description: 'Density map' },
+    { key: 'all3dModels', label: 'ALL 3D', icon: '◈', description: 'All satellites as 3D models' },
   ];
 
   return (

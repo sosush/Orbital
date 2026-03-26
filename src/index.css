@@ -568,8 +568,8 @@ input { font-family: inherit; border: none; outline: none; background: none; col
 }
 
 .sat-core {
-  width: 6px;
-  height: 6px;
+  width: var(--sat-core-size, 6px);
+  height: var(--sat-core-size, 6px);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.7);
   transition: all 0.3s var(--ease);
@@ -606,10 +606,10 @@ input { font-family: inherit; border: none; outline: none; background: none; col
 
 .sat-ring {
   position: absolute;
-  left: 3px; 
+  left: calc(var(--sat-core-size, 6px) / 2);
   top: 50%;
-  width: 24px;
-  height: 24px;
+  width: calc(var(--sat-core-size, 6px) * 4);
+  height: calc(var(--sat-core-size, 6px) * 4);
   border-radius: 50%;
   border: 1px solid var(--accent);
   transform: translate(-50%, -50%);
@@ -623,7 +623,7 @@ input { font-family: inherit; border: none; outline: none; background: none; col
 }
 
 /* Category Colors */
-.cat-stations .sat-core { background: #fff; width: 8px; height: 8px; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+.cat-stations .sat-core { background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
 .cat-stations .sat-label { color: #fff; }
 
 .cat-gps .sat-core { background: rgba(16, 185, 129, 0.8); }
@@ -726,135 +726,7 @@ input { font-family: inherit; border: none; outline: none; background: none; col
 /* ============================================================
    ICONIC 3D SATELLITE MODELS
    ============================================================ */
-.sat-widget.iconic .sat-core { display: none; }
-
-.sat-model-3d {
-  position: relative;
-  width: calc(10px * var(--model-scale, 1));
-  height: calc(10px * var(--model-scale, 1));
-}
-
-/* ISS / Station shape */
-.shape-station {
-  width: calc(16px * var(--model-scale, 1));
-  height: calc(6px * var(--model-scale, 1));
-  background: var(--model-color, #FFD700);
-  border-radius: 1px;
-  position: relative;
-  box-shadow: 0 0 10px var(--model-color, #FFD700), 0 0 20px var(--model-color, #FFD700);
-}
-.shape-station::before,
-.shape-station::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: calc(4px * var(--model-scale, 1));
-  height: calc(18px * var(--model-scale, 1));
-  background: var(--model-color, #FFD700);
-  opacity: 0.8;
-  border-radius: 1px;
-}
-.shape-station::before { left: 1px; }
-.shape-station::after { right: 1px; }
-
-/* Telescope shape (Hubble) */
-.shape-telescope {
-  width: calc(5px * var(--model-scale, 1));
-  height: calc(14px * var(--model-scale, 1));
-  background: var(--model-color, #C084FC);
-  border-radius: 2px;
-  position: relative;
-  box-shadow: 0 0 10px var(--model-color, #C084FC);
-}
-.shape-telescope::before {
-  content: '';
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(14px * var(--model-scale, 1));
-  height: calc(3px * var(--model-scale, 1));
-  background: var(--model-color, #C084FC);
-  opacity: 0.7;
-}
-
-/* Flat satellite (Starlink) */
-.shape-flatsat {
-  width: calc(12px * var(--model-scale, 1));
-  height: calc(3px * var(--model-scale, 1));
-  background: var(--model-color, #00B4D8);
-  border-radius: 1px;
-  box-shadow: 0 0 8px var(--model-color, #00B4D8);
-}
-
-/* Navigation satellite (GPS) */
-.shape-navsatellite {
-  width: calc(6px * var(--model-scale, 1));
-  height: calc(6px * var(--model-scale, 1));
-  background: var(--model-color, #10B981);
-  border-radius: 50%;
-  position: relative;
-  box-shadow: 0 0 10px var(--model-color, #10B981);
-}
-.shape-navsatellite::before,
-.shape-navsatellite::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: calc(10px * var(--model-scale, 1));
-  height: calc(2px * var(--model-scale, 1));
-  background: var(--model-color, #10B981);
-  opacity: 0.7;
-}
-.shape-navsatellite::before { right: 100%; }
-.shape-navsatellite::after { left: 100%; }
-
-/* Weather satellite */
-.shape-weather {
-  width: calc(8px * var(--model-scale, 1));
-  height: calc(8px * var(--model-scale, 1));
-  background: var(--model-color, #F97316);
-  border-radius: 2px;
-  position: relative;
-  box-shadow: 0 0 10px var(--model-color, #F97316);
-  transform: rotate(45deg);
-}
-
-/* Science satellite */
-.shape-science {
-  width: calc(6px * var(--model-scale, 1));
-  height: calc(6px * var(--model-scale, 1));
-  background: var(--model-color, #3B82F6);
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  position: relative;
-  box-shadow: 0 0 10px var(--model-color, #3B82F6);
-}
-
-/* Glow ring for iconic satellites */
-.sat-model-glow {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, var(--model-color, #fff) 0%, transparent 70%);
-  opacity: 0.25;
-  pointer-events: none;
-  animation: modelGlowPulse 3s infinite ease-in-out;
-}
-@keyframes modelGlowPulse {
-  0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.4); }
-}
-
-.sat-widget.iconic:hover .sat-model-glow {
-  opacity: 0.6;
-  transform: translate(-50%, -50%) scale(2);
-}
+.sat-widget.has-model .sat-core { display: none; }
 
 /* ============================================================
    DEBRIS VISUALIZATION
@@ -901,6 +773,37 @@ input { font-family: inherit; border: none; outline: none; background: none; col
   font-weight: 600;
   letter-spacing: .15em;
   color: #EF4444;
+
+.render-debug-badge {
+  position: absolute;
+  right: 32px;
+  bottom: 92px;
+  z-index: 95;
+  min-width: 230px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(6, 10, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.render-debug-title {
+  font-size: .55rem;
+  letter-spacing: .18em;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.render-debug-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .65rem;
+  color: var(--text-sec);
+  line-height: 1.7;
+}
 }
 
 /* ============================================================

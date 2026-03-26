@@ -12,77 +12,40 @@ import LaunchPanel from './components/LaunchPanel';
 
 export default function App() {
   const {
-    satellites,
-    totalCount,
-    selectedSatellite,
-    selectSatellite,
-    searchQuery,
-    setSearchQuery,
-    activeCategory,
-    setActiveCategory,
-    loading,
-    error,
-    categories,
+    satellites, totalCount, selectedSatellite, selectSatellite,
+    searchQuery, setSearchQuery, activeCategory, setActiveCategory,
+    loading, error, categories,
   } = useSatellites();
 
   const {
-    features,
-    toggleFeature,
-    terminatorData,
-    debrisData,
-    debrisLoading,
-    footprintData,
-    constellationData,
-    islLinksData,
-    launchData,
-    launchLoading,
-    heatmapData,
+    features, toggleFeature,
+    terminatorData, debrisData, debrisLoading,
+    footprintData, constellationData, islLinksData,
+    launchData, launchLoading,
   } = useFeatures(satellites, selectedSatellite);
 
   const recenterRef = useRef(null);
   const [showLaunchPanel, setShowLaunchPanel] = useState(false);
 
-  const handleRecenter = () => {
-    recenterRef.current?.();
-  };
+  const handleRecenter = () => recenterRef.current?.();
+  const handleTrack = () => recenterRef.current?.();
 
-  const handleTrack = () => {
-    recenterRef.current?.();
-  };
-
-  // Toggle launches also toggles the panel
   const handleToggleFeature = useCallback((key) => {
     toggleFeature(key);
-    if (key === 'launches') {
-      setShowLaunchPanel(prev => !prev);
-    }
+    if (key === 'launches') setShowLaunchPanel(prev => !prev);
   }, [toggleFeature]);
-
-  const handleFlyTo = useCallback((lat, lng) => {
-    if (!recenterRef.current) return;
-    // We'll use the globe ref through recenter mechanism
-  }, []);
 
   return (
     <>
       <LoadingScreen loading={loading} />
-
       <div className={`app${selectedSatellite ? ' has-detail' : ''}`}>
-        <TopBar
-          satelliteCount={totalCount}
-          isConnected={!error && !loading}
-          debrisCount={features.debris ? debrisData.length : 0}
-        />
+        <TopBar satelliteCount={totalCount} isConnected={!error && !loading} />
 
         <Sidebar
-          satellites={satellites}
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedSatellite={selectedSatellite}
-          onSelectSatellite={selectSatellite}
+          satellites={satellites} categories={categories}
+          activeCategory={activeCategory} onCategoryChange={setActiveCategory}
+          searchQuery={searchQuery} onSearchChange={setSearchQuery}
+          selectedSatellite={selectedSatellite} onSelectSatellite={selectSatellite}
           totalCount={totalCount}
         />
 
@@ -97,15 +60,12 @@ export default function App() {
           constellationData={constellationData}
           islLinksData={islLinksData}
           launchData={launchData}
-          heatmapData={heatmapData}
           features={features}
         />
 
         <FeatureToggles
-          features={features}
-          onToggle={handleToggleFeature}
-          debrisLoading={debrisLoading}
-          launchLoading={launchLoading}
+          features={features} onToggle={handleToggleFeature}
+          debrisLoading={debrisLoading} launchLoading={launchLoading}
         />
 
         {selectedSatellite && (
@@ -118,17 +78,12 @@ export default function App() {
 
         {showLaunchPanel && features.launches && (
           <LaunchPanel
-            launchData={launchData}
-            loading={launchLoading}
+            launchData={launchData} loading={launchLoading}
             onClose={() => setShowLaunchPanel(false)}
-            onFlyTo={handleFlyTo}
           />
         )}
 
-        <BottomBar
-          selectedSatellite={selectedSatellite}
-          onRecenter={handleRecenter}
-        />
+        <BottomBar selectedSatellite={selectedSatellite} onRecenter={handleRecenter} />
       </div>
     </>
   );

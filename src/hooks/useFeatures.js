@@ -1,89 +1,105 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { fetchDebris } from '../services/debrisService';
 import { fetchUpcomingLaunches, fetchRecentLaunches } from '../services/launchService';
 import { getSunPosition, getTerminatorCoords } from '../services/sunPosition';
-import { getFootprintPolygon } from '../services/visibilityService';
+import { getFootprintRadius } from '../services/visibilityService';
 import { groupByConstellation, computeISLLinks } from '../services/constellationService';
-import { generateHeatmapData } from '../services/heatmapService';
 
-/**
- * Hook that manages all enhanced feature state and data.
- */
 export function useFeatures(satellites, selectedSatellite) {
-  // Feature toggle states
   const [features, setFeatures] = useState({
     terminator: false,
     debris: false,
-    footprint: true, // on by default when a satellite is selected
+    footprint: true,
     constellations: false,
     islLinks: false,
     launches: false,
     heatmap: false,
+    all3dModels: false,
   });
 
-  // Data states
   const [debrisData, setDebrisData] = useState([]);
   const [debrisLoading, setDebrisLoading] = useState(false);
   const [launchData, setLaunchData] = useState({ upcoming: [], recent: [] });
   const [launchLoading, setLaunchLoading] = useState(false);
+  const [tick, setTick] = useState(0);
 
-  // Toggle a feature
   const toggleFeature = useCallback((key) => {
     setFeatures(prev => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
+  // Time tick for terminator updates.
+  useEffect(() => {
+    if (!features.terminator) return;
+    const iv = setInterval(() => setTick(t => t + 1), 5000);
+    return () => clearInterval(iv);
+  }, [features.terminator]);
+
   // --- Solar Terminator ---
   const terminatorData = useMemo(() => {
     if (!features.terminator) return { coords: [], sunPos: null };
-    const sunPos = getSunPosition();
-    const coords = getTerminatorCoords();
+    const now = new Date();
+    const sunPos = getSunPosition(now);
+    const coords = getTerminatorCoords(now);
     return { coords, sunPos };
-  }, [features.terminator, satellites]); // re-calc when satellites update (every 2s)
+  }, [features.terminator, tick]);
 
   // --- Debris ---
   useEffect(() => {
     if (features.debris && debrisData.length === 0 && !debrisLoading) {
       setDebrisLoading(true);
-      fetchDebris(150).then(data => {
-        setDebrisData(data);
+      console.log('[useFeatures] Debris feature enabled, starting fetch...');
+      
+      const timeoutId = setTimeout(() => {
+        console.warn('[useFeatures] Debris fetch timeout after 15s');
         setDebrisLoading(false);
-      }).catch(() => setDebrisLoading(false));
+      }, 15000);
+      
+      fetchDebris(150)
+        .then(data => {
+          clearTimeout(timeoutId);
+          console.log('[useFeatures] Debris loaded:', data.length, 'objects');
+          setDebrisData(data);
+          setDebrisLoading(false);
+        })
+        .catch(err => {
+          clearTimeout(timeoutId);
+          console.error('[useFeatures] Debris fetch error:', err);
+          setDebrisLoading(false);
+        });
     }
   }, [features.debris, debrisData.length, debrisLoading]);
 
-  // --- Visibility Footprint ---
+  // --- Visibility Footprint (ring-based) ---
   const footprintData = useMemo(() => {
-    if (!features.footprint || !selectedSatellite) return [];
-    return getFootprintPolygon(
-      selectedSatellite.lat,
-      selectedSatellite.lng,
-      selectedSatellite.alt
-    );
-  }, [features.footprint, selectedSatellite?.lat, selectedSatellite?.lng, selectedSatellite?.alt]);
+    if (!features.footprint) return [];
+    const targetSat = selectedSatellite || satellites[0];
+    if (!targetSat) return [];
+    const radius = getFootprintRadius(targetSat.alt);
+    return [{
+      lat: targetSat.lat,
+      lng: targetSat.lng,
+      radius,
+    }];
+  }, [features.footprint, selectedSatellite?.id, satellites]);
 
   // --- Constellation Grouping ---
   const constellationData = useMemo(() => {
-    if (!features.constellations) return { groups: new Map(), planes: [] };
-    const groups = groupByConstellation(satellites);
-    return { groups };
+    if (!features.constellations) return { groups: new Map() };
+    return { groups: groupByConstellation(satellites) };
   }, [features.constellations, satellites]);
 
-  // --- ISL Links ---
+  // --- ISL Links as path coords (not arcs, so they go at satellite altitude) ---
   const islLinksData = useMemo(() => {
     if (!features.islLinks) return [];
-    // Find the constellation of the selected satellite, or use GPS as default
     const groups = groupByConstellation(satellites);
     const allLinks = [];
-
     for (const [, group] of groups) {
       if (group.satellites.length < 3) continue;
-      // Limit links computation to constellations with reasonable size
-      const sats = group.satellites.slice(0, 50); // cap for performance
+      const sats = group.satellites.slice(0, 50);
       const links = computeISLLinks(sats, group.info.maxLinkDist, 2);
       links.forEach(l => { l.color = group.info.color; });
       allLinks.push(...links);
     }
-
     return allLinks;
   }, [features.islLinks, satellites]);
 
@@ -101,12 +117,6 @@ export function useFeatures(satellites, selectedSatellite) {
     }
   }, [features.launches, launchData.upcoming.length, launchLoading]);
 
-  // --- Heatmap ---
-  const heatmapData = useMemo(() => {
-    if (!features.heatmap) return [];
-    return generateHeatmapData(satellites, 8);
-  }, [features.heatmap, satellites]);
-
   return {
     features,
     toggleFeature,
@@ -118,6 +128,5 @@ export function useFeatures(satellites, selectedSatellite) {
     islLinksData,
     launchData: features.launches ? launchData : { upcoming: [], recent: [] },
     launchLoading,
-    heatmapData,
   };
 }
